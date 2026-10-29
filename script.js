@@ -17,7 +17,6 @@ const ageGate=document.querySelector('.age-gate');
 const birthDate=ageGate.querySelector('#birth-date');
 const ageError=ageGate.querySelector('.age-error');
 let currentPhoto=0;
-let pendingPhoto=null;
 let ageVerified=false;
 function showPhoto(index){
   currentPhoto=(index+photos.length)%photos.length;
@@ -30,7 +29,6 @@ function showPhoto(index){
 function openPhoto(index){
   const target=(index+photos.length)%photos.length;
   if(photos[target].hasAttribute('data-age-restricted')&&!ageVerified){
-    pendingPhoto=target;
     ageError.hidden=true;
     birthDate.value='';
     ageGate.showModal();
@@ -61,13 +59,10 @@ ageGate.querySelector('form').addEventListener('submit',event=>{
   }
   ageVerified=true;
   document.body.classList.add('age-verified');
-  const target=pendingPhoto;
-  pendingPhoto=null;
   ageGate.close();
-  if(target!==null)showPhoto(target);
+  if(lightbox.open)lightbox.close();
 });
 ageGate.querySelector('.age-cancel').addEventListener('click',()=>ageGate.close());
-ageGate.addEventListener('close',()=>{pendingPhoto=null});
 lightbox.querySelector('.lightbox-close').addEventListener('click',()=>lightbox.close());
 lightbox.querySelector('.lightbox-prev').addEventListener('click',()=>openPhoto(currentPhoto-1));
 lightbox.querySelector('.lightbox-next').addEventListener('click',()=>openPhoto(currentPhoto+1));
@@ -75,16 +70,24 @@ lightbox.addEventListener('keydown',event=>{
   if(event.key==='ArrowRight'){event.preventDefault();openPhoto(currentPhoto+1)}
   if(event.key==='ArrowLeft'){event.preventDefault();openPhoto(currentPhoto-1)}
 });
+// The full photo area supports a horizontal swipe or mouse drag in addition to the arrows.
+const lightboxStage=lightbox.querySelector('figure');
 let swipeStart=null;
-fullImage.addEventListener('pointerdown',event=>{
-  if(event.pointerType==='touch')swipeStart=event.clientX
-},{passive:true});
-fullImage.addEventListener('pointerup',event=>{
-  if(swipeStart!==null&&Math.abs(event.clientX-swipeStart)>50)
-    openPhoto(currentPhoto+(event.clientX<swipeStart?1:-1));
-  swipeStart=null
-},{passive:true});
-fullImage.addEventListener('pointercancel',()=>swipeStart=null);
+fullImage.draggable=false;
+fullImage.addEventListener('dragstart',event=>event.preventDefault());
+lightboxStage.addEventListener('pointerdown',event=>{
+  swipeStart={id:event.pointerId,x:event.clientX,y:event.clientY};
+  lightboxStage.setPointerCapture(event.pointerId);
+});
+lightboxStage.addEventListener('pointerup',event=>{
+  if(!swipeStart||event.pointerId!==swipeStart.id)return;
+  const dx=event.clientX-swipeStart.x;
+  const dy=event.clientY-swipeStart.y;
+  swipeStart=null;
+  if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.2)
+    openPhoto(currentPhoto+(dx<0?1:-1));
+});
+lightboxStage.addEventListener('pointercancel',()=>swipeStart=null);
 lightbox.addEventListener('close',()=>photos[currentPhoto].focus({preventScroll:true}));
 const curtainGallery=document.querySelector('.gallery');if(curtainGallery&&!reduced.matches){curtainGallery.classList.add('curtain-ready');let curtainOpened=false;function openCurtains(){if(curtainOpened)return;curtainOpened=true;curtainGallery.classList.add('curtain-open');setTimeout(()=>curtainGallery.classList.add('curtain-finished'),3300)}const curtainObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){openCurtains();curtainObserver.disconnect()}},{rootMargin:'0px 0px -15% 0px',threshold:0});curtainObserver.observe(curtainGallery);curtainGallery.addEventListener('focusin',openCurtains);reduced.addEventListener('change',()=>{if(reduced.matches){openCurtains();curtainObserver.disconnect();curtainGallery.classList.add('curtain-finished')}})}
 // Type every heading once while preserving its line breaks and emphasis.

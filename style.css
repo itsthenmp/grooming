@@ -37,3 +37,14 @@ body.age-verified .gallery-grid .photo-link.age-restricted::after{content:"18+";
 .age-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
 .age-actions button{padding:10px 14px;border:1px solid #785b70;border-radius:6px;background:transparent;color:#453b48;cursor:pointer}
 .age-actions button[type=submit]{background:#73556a;color:white}
+
+.registration-cta{display:grid;grid-template-columns:1.3fr auto;align-items:end;gap:40px;background:#f4e7df;color:#493d42}
+.registration-cta .section-heading{margin:0}
+.registration-cta h2{font-size:clamp(44px,6vw,96px)}
+.registration-cta .section-heading>p:last-child{max-width:620px;margin-top:24px}
+.registration-cta .registration-link{display:inline-flex;align-items:center;justify-content:center;min-height:58px;padding:16px 25px;border-radius:100px;background:#73556a;color:#fff;white-space:nowrap;font-weight:700;transition:background .2s,transform .2s}
+.registration-cta .registration-link:hover{background:#593e53;transform:translateY(-2px)}
+@media(max-width:700px){.registration-cta{grid-template-columns:1fr;gap:25px}.registration-cta .registration-link{justify-self:start}}
+
+.lightbox figure{touch-action:none;user-select:none;cursor:grab}
+.lightbox figure:active{cursor:grabbing}
